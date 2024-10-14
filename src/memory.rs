@@ -1,9 +1,9 @@
 //! Memory intrinsics for SP1 zkVM.
 
 /// `MEMCPY_32` syscall ID.
-pub const SYSCALL_ID_MEMCPY_32: u32 = 0x00_00_01_30;
+pub const SYSCALL_ID_MEMCPY_32: u32 = 0x00_01_01_90;
 /// `MEMCPY_64` syscall ID.
-pub const SYSCALL_ID_MEMCPY_64: u32 = 0x00_00_01_31;
+pub const SYSCALL_ID_MEMCPY_64: u32 = 0x00_01_01_91;
 
 /// Create 32 bytes bitwise copy from `src` to `dst`.
 /// The source and destination may overlap.
@@ -32,11 +32,16 @@ pub const SYSCALL_ID_MEMCPY_64: u32 = 0x00_00_01_31;
 /// [`Copy`]: core::marker::Copy
 /// [read-ownership]: core::ptr::read#ownership-of-the-returned-value
 #[inline(always)]
-pub unsafe fn memcpy32(
-    src: *const u32,
-    dst: *mut u32,
-) {
-    unsafe { syscall!(SYSCALL_ID_MEMCPY_32, src, dst) }
+pub unsafe fn memcpy32<T>(src: *const T, dst: *mut T) {
+    unsafe {
+        cfg_if::cfg_if! {
+            if #[cfg(not(feature = "disable-memcpy-syscalls"))] {
+                crate::syscall!(SYSCALL_ID_MEMCPY_32, src, dst)
+            } else {
+                core::ptr::copy(src as *const u8, dst as *mut u8, 64);
+            }
+        }
+    }
 }
 
 /// Create 64 bytes bitwise copy from `src` to `dst`.
@@ -66,9 +71,14 @@ pub unsafe fn memcpy32(
 /// [`Copy`]: core::marker::Copy
 /// [read-ownership]: core::ptr::read#ownership-of-the-returned-value
 #[inline(always)]
-pub unsafe fn memcpy64(
-    src: *const u32,
-    dst: *mut u32,
-) {
-    unsafe { syscall!(SYSCALL_ID_MEMCPY_64, src, dst) }
+pub unsafe fn memcpy64<T>(src: *const T, dst: *mut T) {
+    unsafe {
+        cfg_if::cfg_if! {
+            if #[cfg(not(feature = "disable-memcpy-syscalls"))] {
+                crate::syscall!(SYSCALL_ID_MEMCPY_64, src, dst)
+            } else {
+                core::ptr::copy(src as *const u8, dst as *mut u8, 64);
+            }
+        }
+    }
 }

@@ -1,0 +1,13 @@
+[package]
+name = "sp1-intrinsics"
+edition = "2021"
+license = "MIT OR Apache-2.0"
+
+[lints.rust]
+unsafe-op-in-unsafe-fn = "deny"
+
+[dependencies]
+cfg-if = "1.0"
+
+[features]
+disable-memcpy-syscalls = []
